@@ -316,14 +316,49 @@ public abstract class AbstractClassifier<M extends Object>
     //------//
     /**
      * Load model and norms from the most suitable classifier data files.
-     * If user files do not exist or cannot be unmarshalled, the default files are used.
+     * Loading priority: (1) trained-models folder in repository, (2) user config folder,
+     * (3) default bundled files.
      *
      * @param fileName file name for classifier data
      * @return the model loaded
      */
     protected M load (String fileName)
     {
-        // First, try user data, if any, in local EVAL folder
+        // First, try repository trained models folder (highest priority)
+        logger.debug("AbstractClassifier. Trying trained models folder");
+
+        {
+            final Path path = WellKnowns.TRAINED_MODELS_FOLDER.resolve(fileName);
+
+            if (Files.exists(path)) {
+                try {
+                    Path root = ZipFileSystem.open(path);
+                    logger.debug("loadModel...");
+
+                    M model = loadModel(root);
+                    logger.debug("loadNorms...");
+                    norms = loadNorms(root);
+                    logger.debug("loaded.");
+                    root.getFileSystem().close();
+
+                    if (!isCompatible(model, norms)) {
+                        final String msg = "Incompatible classifier in trained models folder " + path
+                                + ", trying next location";
+                        logger.warn(msg);
+                    } else {
+                        // Tell user we are loading from trained models folder
+                        logger.info("Classifier data loaded from trained models folder {}", path);
+
+                        return model; // Normal exit
+                    }
+                } catch (Exception ex) {
+                    logger.warn("Load error from trained models folder: {}", ex.toString(), ex);
+                    norms = null;
+                }
+            }
+        }
+
+        // Second, try user data, if any, in local config folder
         logger.debug("AbstractClassifier. Trying user data");
 
         {
@@ -357,7 +392,7 @@ public abstract class AbstractClassifier<M extends Object>
             }
         }
 
-        // Second, use default data (in program RES folder)
+        // Third, use default data (in program RES folder)
         logger.debug("AbstractClassifier. Trying default data");
 
         final URI uri = UriUtil.toURI(WellKnowns.RES_URI, fileName);
@@ -466,18 +501,18 @@ public abstract class AbstractClassifier<M extends Object>
     // store //
     //-------//
     /**
-     * Store the engine internals, always as user files.
+     * Store the engine internals to the trained models folder in the repository.
      *
      * @param fileName file name for classifier data (model &amp; norms)
      */
     protected void store (String fileName)
     {
-        final Path path = WellKnowns.TRAIN_FOLDER.resolve(fileName);
+        final Path path = WellKnowns.TRAINED_MODELS_FOLDER.resolve(fileName);
 
         try {
-            if (!Files.exists(WellKnowns.TRAIN_FOLDER)) {
-                Files.createDirectories(WellKnowns.TRAIN_FOLDER);
-                logger.info("Created directory {}", WellKnowns.TRAIN_FOLDER);
+            if (!Files.exists(WellKnowns.TRAINED_MODELS_FOLDER)) {
+                Files.createDirectories(WellKnowns.TRAINED_MODELS_FOLDER);
+                logger.info("Created directory {}", WellKnowns.TRAINED_MODELS_FOLDER);
             }
 
             Path root = ZipFileSystem.create(path); // Delete if already exists
