@@ -336,6 +336,12 @@ public enum Shape
     TREMOLO_3("Triple tremolo"),
 
     //
+    // Bowing techniques ---
+    //
+    UPBOW("Upbow symbol"),
+    DOWNBOW("Downbow symbol"),
+
+    //
     // Miscellaneous ---
     //
     CLUTTER("Pure clutter", Colors.SHAPE_UNKNOWN),
