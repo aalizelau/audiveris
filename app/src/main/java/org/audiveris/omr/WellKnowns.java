@@ -169,6 +169,9 @@ public abstract class WellKnowns
     /** The folder where training material is stored. */
     public static final Path TRAIN_FOLDER = CONFIG_FOLDER.resolve("train");
 
+    /** The folder where trained classifier models are stored (in repository). */
+    public static final Path TRAINED_MODELS_FOLDER = Paths.get("trained-models");
+
     /** The default base for output folders. */
     public static final Path DEFAULT_BASE_FOLDER = DATA_FOLDER; // BHT: skip "output"
 

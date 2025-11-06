@@ -404,6 +404,12 @@ public class InterFactory
                 return switches.getValue(ProcessingSwitch.articulations) ? ArticulationInter
                         .createValidAdded(glyph, shape, grade, system, systemHeadChords) : null;
 
+            // Bowing techniques
+            case UPBOW:
+            case DOWNBOW:
+                return switches.getValue(ProcessingSwitch.articulations) ? ArticulationInter
+                        .createValidAdded(glyph, shape, grade, system, systemHeadChords) : null;
+
             // Markers
             case CODA:
             case SEGNO:
@@ -1050,6 +1056,11 @@ public class InterFactory
             case STACCATISSIMO:
             case MARCATO:
             case MARCATO_BELOW:
+                return new ArticulationInter(null, shape, GRADE); // No visit
+
+            // Bowing techniques
+            case UPBOW:
+            case DOWNBOW:
                 return new ArticulationInter(null, shape, GRADE); // No visit
 
             // Markers

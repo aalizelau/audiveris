@@ -420,6 +420,11 @@ public class ShapeSet
             Colors.SCORE_FRAME,
             shapesOf(Clefs, OctaveShifts));
 
+    public static final ShapeSet Custom = new ShapeSet(
+            UPBOW,
+            Colors.SCORE_MODIFIERS,
+            shapesOf(UPBOW, DOWNBOW));
+
     public static final ShapeSet Dynamics = new ShapeSet(
             DYNAMICS_F,
             Colors.SCORE_MODIFIERS,

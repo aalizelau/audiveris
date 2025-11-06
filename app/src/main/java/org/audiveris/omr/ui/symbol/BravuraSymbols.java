@@ -182,6 +182,8 @@ public class BravuraSymbols
             case PLAYING_HALF_OPEN -> ints(0xE7F7);
             case PLAYING_CLOSED -> ints(0xE7F5);
 
+            case DOWNBOW -> ints(0xE610);
+
             case QUARTER_NOTE_DOWN -> ints(0xE1D6);
             case QUARTER_NOTE_UP, METRO_QUARTER -> ints(0xE1D5);
             case QUARTER_REST -> ints(0xE4E5);
@@ -228,6 +230,8 @@ public class BravuraSymbols
             case TURN_INVERTED -> ints(0xE568);
             case TURN_SLASH -> ints(0xE569);
             case TURN_UP -> ints(0xE56A);
+
+            case UPBOW -> ints(0xE612);
 
             case VENTIDUESIMA -> ints(0xE517);
 
