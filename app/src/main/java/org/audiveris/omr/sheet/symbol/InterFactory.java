@@ -42,6 +42,7 @@ import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
+import org.audiveris.omr.sig.inter.BowingInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
@@ -407,7 +408,7 @@ public class InterFactory
             // Bowing techniques
             case UPBOW:
             case DOWNBOW:
-                return switches.getValue(ProcessingSwitch.articulations) ? ArticulationInter
+                return switches.getValue(ProcessingSwitch.articulations) ? BowingInter
                         .createValidAdded(glyph, shape, grade, system, systemHeadChords) : null;
 
             // Markers
@@ -1061,7 +1062,7 @@ public class InterFactory
             // Bowing techniques
             case UPBOW:
             case DOWNBOW:
-                return new ArticulationInter(null, shape, GRADE); // No visit
+                return new BowingInter(null, shape, GRADE); // No visit
 
             // Markers
             case CODA:

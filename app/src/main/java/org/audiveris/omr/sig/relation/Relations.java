@@ -31,6 +31,7 @@ import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.BowingInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
@@ -165,6 +166,7 @@ public abstract class Relations
         map(HeadChordInter.class, ChordStemRelation.class, StemInter.class);
         map(HeadChordInter.class, ChordSyllableRelation.class, LyricItemInter.class);
 
+        map(HeadInter.class, HeadBowingRelation.class, BowingInter.class);
         map(HeadInter.class, HeadFingeringRelation.class, FingeringInter.class);
         map(HeadInter.class, HeadPlayingRelation.class, PlayingInter.class);
         map(HeadInter.class, HeadPluckingRelation.class, PluckingInter.class);

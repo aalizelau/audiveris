@@ -48,6 +48,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
+import org.audiveris.omr.sig.relation.HeadBowingRelation;
 import org.audiveris.omr.sig.relation.HeadFingeringRelation;
 import org.audiveris.omr.sig.relation.HeadPlayingRelation;
 import org.audiveris.omr.sig.relation.HeadPluckingRelation;
@@ -595,6 +596,23 @@ public class HeadInter
     {
         for (Relation rel : sig.getRelations(this, HeadPluckingRelation.class)) {
             return (PluckingInter) sig.getOppositeInter(this, rel);
+        }
+
+        return null;
+    }
+
+    //-----------//
+    // getBowing //
+    //-----------//
+    /**
+     * Report the bowing, if any, related to this head.
+     *
+     * @return the related bowing, or null
+     */
+    public BowingInter getBowing ()
+    {
+        for (Relation rel : sig.getRelations(this, HeadBowingRelation.class)) {
+            return (BowingInter) sig.getOppositeInter(this, rel);
         }
 
         return null;

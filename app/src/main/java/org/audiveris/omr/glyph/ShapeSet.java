@@ -420,7 +420,7 @@ public class ShapeSet
             Colors.SCORE_FRAME,
             shapesOf(Clefs, OctaveShifts));
 
-    public static final ShapeSet Custom = new ShapeSet(
+    public static final ShapeSet Bowings = new ShapeSet(
             UPBOW,
             Colors.SCORE_MODIFIERS,
             shapesOf(UPBOW, DOWNBOW));

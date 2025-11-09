@@ -57,6 +57,7 @@ import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.BeatUnitInter;
+import org.audiveris.omr.sig.inter.BowingInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
@@ -2557,6 +2558,34 @@ public class PartwiseBuilder
 
                     getTechnical().getUpBowOrDownBowOrHarmonic().add(
                             factory.createTechnicalPluck(placement));
+                }
+
+                // Bowing?
+                final BowingInter bowing = head.getBowing();
+                if (bowing != null) {
+                    try {
+                        JAXBElement<?> element = getBowingObject(bowing.getShape());
+
+                        if (element != null) {
+                            // Placement
+                            Class<?> classe = element.getDeclaredType();
+                            Method method = classe.getMethod("setPlacement", AboveBelow.class);
+                            method.invoke(
+                                    element.getValue(),
+                                    (bowing.getCenter().y < head.getCenter().y) ? AboveBelow.ABOVE
+                                            : AboveBelow.BELOW);
+
+                            // Default-Y
+                            method = classe.getMethod("setDefaultY", BigDecimal.class);
+                            method.invoke(element.getValue(), yOf(bowing.getCenter(), staff));
+
+                            // Include in Technical
+                            getTechnical().getUpBowOrDownBowOrHarmonic().add(element);
+                        }
+                    } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
+                            | SecurityException | InvocationTargetException ex) {
+                        logger.warn("Error visiting {} in {}", bowing, current.page, ex);
+                    }
                 }
             }
 

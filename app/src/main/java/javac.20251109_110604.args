@@ -1,0 +1,3 @@
+-cp
+.:../../../../lib/*
+org/audiveris/omr/sig/inter/BowingInter.java

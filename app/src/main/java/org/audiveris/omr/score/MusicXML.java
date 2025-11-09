@@ -187,6 +187,32 @@ public abstract class MusicXML
         };
     }
 
+    //------------------//
+    // getBowingObject //
+    //------------------//
+    public static JAXBElement<?> getBowingObject (Shape shape)
+    {
+        //<!ELEMENT technical
+        //      ((up-bow | down-bow | harmonic | open-string |
+        //        thumb-position | fingering | pluck | double-tongue |
+        //        triple-tongue | stopped | snap-pizzicato | fret |
+        //        string | hammer-on | pull-off | bend | tap | heel |
+        //        toe | fingernails | hole | arrow | handbell |
+        //        other-technical)*)>
+        ObjectFactory factory = new ObjectFactory();
+        EmptyPlacement ep = factory.createEmptyPlacement();
+
+        return switch (shape) {
+            case UPBOW -> factory.createTechnicalUpBow(ep);
+            case DOWNBOW -> factory.createTechnicalDownBow(ep);
+
+            default -> {
+                logger.error("Unsupported bowing shape:{}", shape);
+                yield null;
+            }
+        };
+    }
+
     //-------------------//
     // getDynamicsObject //
     //-------------------//
