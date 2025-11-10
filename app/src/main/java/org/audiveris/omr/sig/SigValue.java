@@ -39,6 +39,7 @@ import org.audiveris.omr.sig.inter.BeatUnitInter;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.BracketConnectorInter;
 import org.audiveris.omr.sig.inter.BracketInter;
+import org.audiveris.omr.sig.inter.BowingInter;
 import org.audiveris.omr.sig.inter.BreathMarkInter;
 import org.audiveris.omr.sig.inter.CaesuraInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
@@ -126,6 +127,7 @@ import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadFingeringRelation;
+import org.audiveris.omr.sig.relation.HeadBowingRelation;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadPlayingRelation;
 import org.audiveris.omr.sig.relation.HeadPluckingRelation;
@@ -206,6 +208,7 @@ public class SigValue
             @XmlElementRef(type = BraceInter.class),
             @XmlElementRef(type = BracketConnectorInter.class),
             @XmlElementRef(type = BracketInter.class),
+            @XmlElementRef(type = BowingInter.class),
             @XmlElementRef(type = BreathMarkInter.class),
             @XmlElementRef(type = CaesuraInter.class),
             @XmlElementRef(type = ChordNameInter.class),
@@ -434,6 +437,7 @@ public class SigValue
                 @XmlElementRef(type = FermataChordRelation.class),
                 @XmlElementRef(type = FlagStemRelation.class),
                 @XmlElementRef(type = HeadFingeringRelation.class),
+                @XmlElementRef(type = HeadBowingRelation.class),
                 @XmlElementRef(type = HeadHeadRelation.class),
                 @XmlElementRef(type = HeadPlayingRelation.class),
                 @XmlElementRef(type = HeadPluckingRelation.class),
