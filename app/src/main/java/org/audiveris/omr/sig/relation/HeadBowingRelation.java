@@ -152,12 +152,12 @@ public class HeadBowingRelation
                 1.5,
                 "Maximum horizontal gap between bowing center & note head");
 
-        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(2.5, "Idem for profile 1");
+        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(3.5, "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 2.0,
                 "Maximum vertical gap between bowing center & note head");
 
-        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(3.0, "Idem for profile 1");
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(5.0, "Idem for profile 1");
     }
 }
