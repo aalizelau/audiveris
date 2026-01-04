@@ -22,17 +22,25 @@
 package org.audiveris.omr;
 
 import org.audiveris.omr.classifier.SampleRepository;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.sheet.PlayList;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sheet.ui.StubsController;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.RunClass;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.NaturalSpec;
@@ -51,6 +59,7 @@ import org.kohsuke.args4j.spi.StopOptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -381,6 +390,118 @@ public class CLI
 
     //~ Inner classes ------------------------------------------------------------------------------
 
+    //------------------//
+    // AddInterParams //
+    //------------------//
+    /**
+     * Parameters for adding an inter.
+     */
+    public static class AddInterParams
+    {
+        /** Inter shape to create. */
+        public Shape shape;
+
+        /** X coordinate in pixels. */
+        public int x;
+
+        /** Y coordinate in pixels. */
+        public int y;
+
+        /** Optional specific sheet ID. */
+        public Integer sheetId;
+
+        /**
+         * Create AddInterParams.
+         *
+         * @param shape the inter shape
+         * @param x     the x coordinate
+         * @param y     the y coordinate
+         */
+        public AddInterParams (Shape shape,
+                               int x,
+                               int y)
+        {
+            this.shape = shape;
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return String.format("AddInterParams{shape=%s, x=%d, y=%d}", shape, x, y);
+        }
+    }
+
+    //-----------------------//
+    // AddInterOptionHandler //
+    //-----------------------//
+    /**
+     * Argument handler for adding an inter.
+     */
+    public static class AddInterOptionHandler
+            extends OptionHandler<AddInterParams>
+    {
+        /**
+         * Create an AddInterOptionHandler object.
+         *
+         * @param parser Command line argument owner
+         * @param option Run-time copy of the Option or Argument annotation
+         * @param setter Setter interface
+         */
+        public AddInterOptionHandler (CmdLineParser parser,
+                                      OptionDef option,
+                                      Setter<? super AddInterParams> setter)
+        {
+            super(parser, option, setter);
+        }
+
+        @Override
+        public String getDefaultMetaVariable ()
+        {
+            return "<shape> <x> <y>";
+        }
+
+        @Override
+        public int parseArguments (org.kohsuke.args4j.spi.Parameters params)
+            throws CmdLineException
+        {
+            // Parse shape name
+            String shapeName = params.getParameter(0).trim();
+            Shape shape;
+
+            try {
+                shape = Shape.valueOf(shapeName.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                throw new CmdLineException(
+                        owner,
+                        "Invalid shape: " + shapeName + ". Use Shape enum values (e.g., NOTEHEAD_BLACK, G_CLEF)");
+            }
+
+            // Parse X coordinate
+            int x;
+            try {
+                x = Integer.parseInt(params.getParameter(1).trim());
+            } catch (NumberFormatException ex) {
+                throw new CmdLineException(owner, "Invalid X coordinate: " + params.getParameter(1));
+            }
+
+            // Parse Y coordinate
+            int y;
+            try {
+                y = Integer.parseInt(params.getParameter(2).trim());
+            } catch (NumberFormatException ex) {
+                throw new CmdLineException(owner, "Invalid Y coordinate: " + params.getParameter(2));
+            }
+
+            // Create and set params
+            AddInterParams addParams = new AddInterParams(shape, x, y);
+            setter.addValue(addParams);
+
+            return 3; // Consumed 3 arguments
+        }
+    }
+
     //----------//
     // BookTask //
     //----------//
@@ -700,6 +821,10 @@ public class CLI
         @Option(name = "-annotate", usage = "(advanced) Annotate book symbols")
         boolean annotate;
 
+        /** Add inter parameters. */
+        @Option(name = "-add-inter", usage = "Add inter to book: <shape> <x> <y>", handler = AddInterOptionHandler.class)
+        AddInterParams addInterParams;
+
         /** Optional "--" separator. */
         @Argument
         @Option(name = "--", handler = StopOptionHandler.class)
@@ -913,6 +1038,11 @@ public class CLI
                     logger.debug("Print book");
                     book.print(validStubs);
                 }
+
+                // Add inter?
+                if (params.addInterParams != null) {
+                    addInterToBook(book, params.addInterParams);
+                }
             } catch (ProcessingCancellationException pce) {
                 logger.warn("Cancelled " + book);
                 cancelled = true;
@@ -938,6 +1068,91 @@ public class CLI
                 if (OMR.gui == null) {
                     LogUtil.removeAppender(book.getRadix());
                 }
+            }
+        }
+
+        /**
+         * Add an inter to the book at specified position.
+         *
+         * @param book   the target book
+         * @param params parameters for adding the inter
+         */
+        private void addInterToBook (Book book,
+                                     AddInterParams params)
+        {
+            logger.info("Adding inter: shape={}, x={}, y={}", params.shape, params.x, params.y);
+
+            try {
+                // Get target sheet (first valid sheet if not specified)
+                SheetStub stub = (params.sheetId != null) ? book.getStub(params.sheetId)
+                        : book.getFirstValidStub();
+
+                if (stub == null) {
+                    logger.warn("No valid sheet found");
+                    return;
+                }
+
+                // Ensure sheet is loaded
+                Sheet sheet = stub.getSheet();
+
+                if (sheet == null) {
+                    logger.warn("Cannot load sheet {}", stub.getNum());
+                    return;
+                }
+
+                // Create location point
+                Point location = new Point(params.x, params.y);
+
+                // Find closest staff automatically (simplified - no user prompt)
+                Staff staff = sheet.getStaffManager().getClosestStaff(location);
+
+                if (staff == null) {
+                    logger.warn("No staff found at location ({}, {})", params.x, params.y);
+                    return;
+                }
+
+                SystemInfo system = staff.getSystem();
+
+                // Create ghost inter
+                Inter inter = InterFactory.createManual(params.shape, sheet);
+
+                if (inter == null) {
+                    logger.warn("Cannot create inter for shape: {}", params.shape);
+                    return;
+                }
+
+                inter.setStaff(staff);
+
+                // Derive position from symbol
+                MusicFamily family = sheet.getStub().getMusicFamily();
+                int staffInterline = staff.getSpecificInterline();
+                MusicFont font = MusicFont.getBaseFont(family, staffInterline);
+
+                boolean ok = inter.deriveFrom(
+                        font.getSymbol(params.shape),
+                        sheet,
+                        font,
+                        location);
+
+                if (!ok) {
+                    logger.warn("Failed to derive inter geometry for shape {}", params.shape);
+                    return;
+                }
+
+                // Add to SIG (this registers the inter and assigns ID)
+                system.getSig().addVertex(inter);
+
+                // Add through controller for proper structure
+                sheet.getInterController().addInter(inter);
+
+                logger.info("Successfully added {} (ID={}) at ({}, {}) in sheet #{}",
+                            params.shape,
+                            inter.getId(),
+                            location.x,
+                            location.y,
+                            stub.getNum());
+            } catch (Exception ex) {
+                logger.warn("Error adding inter: {}", ex.getMessage(), ex);
             }
         }
     }
