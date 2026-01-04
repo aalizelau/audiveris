@@ -44,6 +44,9 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.NaturalSpec;
+import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
+import org.audiveris.omr.sig.ui.UITask;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -1139,18 +1142,36 @@ public class CLI
                     return;
                 }
 
-                // Add to SIG (this registers the inter and assigns ID)
-                system.getSig().addVertex(inter);
-
                 // Add through controller for proper structure
-                sheet.getInterController().addInter(inter);
+                if (OMR.gui != null) {
+                    sheet.getInterController().addInter(inter);
+                } else {
+                    // Batch mode: avoid CtrlTask which depends on GUI Application
+                    final WrappedBoolean cancel = new WrappedBoolean(false);
+                    final Wrapper<Inter> toPublish = new Wrapper<>(null);
+                    final List<? extends UITask> tasks = inter.preAdd(cancel, toPublish);
+
+                    if (!cancel.isSet()) {
+                        for (UITask task : tasks) {
+                            task.performDo();
+                        }
+
+                        if (toPublish.value != null) {
+                            sheet.getInterIndex().publish(toPublish.value);
+                        } else {
+                            sheet.getInterIndex().publish(inter);
+                        }
+
+                        sheet.getStub().setModified(true);
+                    }
+                }
 
                 logger.info("Successfully added {} (ID={}) at ({}, {}) in sheet #{}",
                             params.shape,
                             inter.getId(),
                             location.x,
                             location.y,
-                            stub.getNum());
+                            stub.getNumber());
             } catch (Exception ex) {
                 logger.warn("Error adding inter: {}", ex.getMessage(), ex);
             }
